@@ -2982,9 +2982,7 @@ bool8 PartyContainsType(struct Pokemon *party, u8 partyCount, u16 type)
     u16 s;
     for(i = 0; i < partyCount; ++i)
     {
-        s = GetMonData(&party[i], MON_DATA_SPECIES);
-
-        if(IsSpeciesType(s, type))
+        if (GetMonData(&party[i], MON_DATA_TYPE1, NULL) == type || GetMonData(&party[i], MON_DATA_TYPE2, NULL) == type )
             return TRUE;
     }
 
@@ -5106,15 +5104,13 @@ static void ApplyCounterTrainerQuery(u16 trainerNum, bool8 isBoss, u8 monIdx)
     monIdx %= gPlayerPartyCount;
 
     {
-        u16 species = GetMonData(&gPlayerParty[monIdx], MON_DATA_SPECIES);
-
-        if(gBaseStats[species].type1 != gBaseStats[species].type2)
+        if(GetMonData(&gPlayerParty[monIdx], MON_DATA_TYPE1, NULL) != GetMonData(&gPlayerParty[monIdx], MON_DATA_TYPE2, NULL))
         {
-            baseType = RogueRandomRange(2, isBoss ? FLAG_SET_SEED_BOSSES : FLAG_SET_SEED_TRAINERS) == 0 ? gBaseStats[species].type1 : gBaseStats[species].type2;
+            baseType = RogueRandomRange(2, isBoss ? FLAG_SET_SEED_BOSSES : FLAG_SET_SEED_TRAINERS) == 0 ? GetMonData(&gPlayerParty[monIdx], MON_DATA_TYPE1, NULL) : GetMonData(&gPlayerParty[monIdx], MON_DATA_TYPE2, NULL);
         }
         else
         {
-            baseType = gBaseStats[species].type1;
+            baseType = GetMonData(&gPlayerParty[monIdx], MON_DATA_TYPE1, NULL);
         }
     }
 

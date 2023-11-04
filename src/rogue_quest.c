@@ -983,7 +983,7 @@ static void UpdateMonoQuests(void)
             for(i = 0; i < gPlayerPartyCount; ++i)
             {
                 u16 species = GetMonData(&gPlayerParty[i], MON_DATA_SPECIES);
-                if(species != SPECIES_NONE && !IsSpeciesType(species, type))
+                if(GetMonData(&gPlayerParty[i], MON_DATA_SPECIES) != SPECIES_NONE && GetMonData(&gPlayerParty[i], MON_DATA_TYPE1) != type && GetMonData(&gPlayerParty[i], MON_DATA_TYPE2, NULL) != type )
                 {
                     TryDeactivateQuest(questId);
                     break;
