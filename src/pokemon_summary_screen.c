@@ -41,6 +41,7 @@
 #include "text.h"
 #include "tv.h"
 #include "window.h"
+#include "constants/abilities.h"
 #include "constants/items.h"
 #include "constants/moves.h"
 #include "constants/party_menu.h"
@@ -4037,6 +4038,7 @@ static void SetMonTypeIcons(void)
     {
         SetTypeSpritePosAndPal(TYPE_MYSTERY, 120, 48, SPRITE_ARR_ID_TYPE);
         SetSpriteInvisibility(SPRITE_ARR_ID_TYPE + 1, TRUE);
+        SetSpriteInvisibility(SPRITE_ARR_ID_TYPE + 2, TRUE);
     }
     else
     {
@@ -4045,10 +4047,31 @@ static void SetMonTypeIcons(void)
         {
             SetTypeSpritePosAndPal(GetMonData(mon, MON_DATA_TYPE2, NULL), 160, 48, SPRITE_ARR_ID_TYPE + 1);
             SetSpriteInvisibility(SPRITE_ARR_ID_TYPE + 1, FALSE);
+            if (GetMonData(mon, MON_DATA_ABILITY, NULL) == ABILITY_SPECIALIST
+            && GetMonData(mon, MON_DATA_TYPE2, NULL) != gBattleMoves[GetMonData(mon, MON_DATA_MOVE1, NULL)].type
+            && GetMonData(mon, MON_DATA_TYPE1, NULL) != gBattleMoves[GetMonData(mon, MON_DATA_MOVE1, NULL)].type)
+            // we know that type 1 and 2 are different, but the first move must be different than type 1 >>AND<< 2
+            {
+                SetTypeSpritePosAndPal(gBattleMoves[GetMonData(mon, MON_DATA_MOVE1, NULL)].type, 200, 48, SPRITE_ARR_ID_TYPE + 2);
+                SetSpriteInvisibility(SPRITE_ARR_ID_TYPE + 2, FALSE);
+            }
+            else
+                SetSpriteInvisibility(SPRITE_ARR_ID_TYPE + 2, TRUE);
         }
         else
         {
-            SetSpriteInvisibility(SPRITE_ARR_ID_TYPE + 1, TRUE);
+            if (GetMonData(mon, MON_DATA_ABILITY, NULL) == ABILITY_SPECIALIST
+            && GetMonData(mon, MON_DATA_TYPE1, NULL) != gBattleMoves[GetMonData(mon, MON_DATA_MOVE1, NULL)].type)
+            {
+                SetTypeSpritePosAndPal(gBattleMoves[GetMonData(mon, MON_DATA_MOVE1, NULL)].type, 160, 48, SPRITE_ARR_ID_TYPE + 1);
+                SetSpriteInvisibility(SPRITE_ARR_ID_TYPE + 1, FALSE);
+                SetSpriteInvisibility(SPRITE_ARR_ID_TYPE + 2, TRUE);
+            }
+            else
+            {
+                SetSpriteInvisibility(SPRITE_ARR_ID_TYPE + 1, TRUE);
+                SetSpriteInvisibility(SPRITE_ARR_ID_TYPE + 2, TRUE);
+            }
         }
     }
 }

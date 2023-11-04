@@ -3345,7 +3345,12 @@ static void DoBattleIntro(void)
                 memcpy(&gBattleMons[gActiveBattler], &gBattleResources->bufferB[gActiveBattler][4], sizeof(struct BattlePokemon));
                 gBattleMons[gActiveBattler].type1 = GetMonData(GetBattlerPartyData(gActiveBattler), MON_DATA_TYPE1, NULL);
                 gBattleMons[gActiveBattler].type2 = GetMonData(GetBattlerPartyData(gActiveBattler), MON_DATA_TYPE2, NULL);
-                gBattleMons[gActiveBattler].type3 = TYPE_MYSTERY;
+                if (GetMonData(GetBattlerPartyData(gActiveBattler), MON_DATA_ABILITY, NULL) == ABILITY_SPECIALIST // TODO improvement/fixes needed
+                && GetMonData(GetBattlerPartyData(gActiveBattler), MON_DATA_TYPE2, NULL) != gBattleMoves[GetMonData(GetBattlerPartyData(gActiveBattler), MON_DATA_MOVE1, NULL)].type
+                && GetMonData(GetBattlerPartyData(gActiveBattler), MON_DATA_TYPE1, NULL) != gBattleMoves[GetMonData(GetBattlerPartyData(gActiveBattler), MON_DATA_MOVE1, NULL)].type)
+                    gBattleMons[gActiveBattler].type3 = gBattleMoves[GetMonData(GetBattlerPartyData(gActiveBattler), MON_DATA_MOVE1, NULL)].type;
+                else
+                    gBattleMons[gActiveBattler].type3 = TYPE_MYSTERY;
                 gBattleMons[gActiveBattler].ability = GetMonData(GetBattlerPartyData(gActiveBattler), MON_DATA_ABILITY, NULL);
                 gBattleMons[gActiveBattler].nature = GetMonData(GetBattlerPartyData(gActiveBattler), MON_DATA_NATURE, NULL);
                 gBattleStruct->hpOnSwitchout[GetBattlerSide(gActiveBattler)] = gBattleMons[gActiveBattler].hp;

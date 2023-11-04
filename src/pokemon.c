@@ -6381,7 +6381,8 @@ u16 GetEvolutionTargetSpecies(struct Pokemon *mon, u8 mode, u16 evolutionItem, s
                     for (j = 0; j < PARTY_SIZE; j++)
                     {
                         if (GetMonData(&gPlayerParty[j], MON_DATA_TYPE1, NULL) == TYPE_DARK
-                         || GetMonData(&gPlayerParty[j], MON_DATA_TYPE2, NULL) == TYPE_DARK)
+                         || GetMonData(&gPlayerParty[j], MON_DATA_TYPE2, NULL) == TYPE_DARK
+                         || (GetMonData(&gPlayerParty[j], MON_DATA_ABILITY, NULL) == ABILITY_SPECIALIST && gBattleMoves[GetMonData(&gPlayerParty[j], MON_DATA_MOVE1, NULL)].type == TYPE_DARK))
                         {
                             targetSpecies = currentEvo.targetSpecies;
                             break;

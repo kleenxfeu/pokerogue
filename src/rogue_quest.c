@@ -1,4 +1,5 @@
 #include "global.h"
+#include "constants/abilities.h"
 #include "constants/game_stat.h"
 #include "constants/items.h"
 
@@ -983,7 +984,10 @@ static void UpdateMonoQuests(void)
             for(i = 0; i < gPlayerPartyCount; ++i)
             {
                 u16 species = GetMonData(&gPlayerParty[i], MON_DATA_SPECIES);
-                if(GetMonData(&gPlayerParty[i], MON_DATA_SPECIES) != SPECIES_NONE && GetMonData(&gPlayerParty[i], MON_DATA_TYPE1) != type && GetMonData(&gPlayerParty[i], MON_DATA_TYPE2, NULL) != type )
+                if(GetMonData(&gPlayerParty[i], MON_DATA_SPECIES) != SPECIES_NONE
+                && GetMonData(&gPlayerParty[i], MON_DATA_TYPE1) != type
+                && GetMonData(&gPlayerParty[i], MON_DATA_TYPE2, NULL) != type
+                && !(GetMonData(&gPlayerParty[i], MON_DATA_ABILITY, NULL) == ABILITY_SPECIALIST && gBattleMoves[GetMonData(&gPlayerParty[i], MON_DATA_MOVE1, NULL)].type == type))
                 {
                     TryDeactivateQuest(questId);
                     break;

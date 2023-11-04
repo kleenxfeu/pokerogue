@@ -779,6 +779,7 @@ gBattleAnims_Moves::
 	.4byte Move_GLACIAL_LANCE
 	.4byte Move_ASTRAL_BARRAGE
 	.4byte Move_EERIE_SPELL
+	.4byte Move_BOILING_PULSE
 @@@@ Z MOVES
 	.4byte Move_BREAKNECK_BLITZ
 	.4byte Move_ALL_OUT_PUMMELING
@@ -10048,6 +10049,7 @@ LightOfRuinBeam:
 	delay 0x1
 	return
 
+Move_BOILING_PULSE::
 Move_ORIGIN_PULSE::
 	loadspritegfx ANIM_TAG_THIN_RING @uproar
 	loadspritegfx ANIM_TAG_WATER_ORB @blue color

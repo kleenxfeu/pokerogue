@@ -1549,7 +1549,7 @@ static void Cmd_attackcanceler(void)
 
     if (TryDeoxysFormChange())
         return;
-    
+
     if (gCurrentMove == MOVE_JUDGMENT && TryArceusFormChange(moveType, gBattlerAttacker, FALSE))
         return;
 
@@ -1583,10 +1583,13 @@ static void Cmd_attackcanceler(void)
     // End of the busted defense part
 
     // Check Protean activation.
-    if ((attackerAbility == ABILITY_PROTEAN || attackerAbility == ABILITY_LIBERO)
+    if (
+    (GetBattlerAbility(gBattlerAttacker) == ABILITY_PROTEAN || GetBattlerAbility(gBattlerAttacker) == ABILITY_LIBERO
+    || (GetBattlerAbility(gBattlerAttacker) == ABILITY_SHAPE_SHIFTER && GET_BASE_SPECIES_ID(gBattleMons[gBattlerAttacker].species) == SPECIES_DEOXYS))
         && (gBattleMons[gBattlerAttacker].type1 != moveType || gBattleMons[gBattlerAttacker].type2 != moveType ||
             (gBattleMons[gBattlerAttacker].type3 != moveType && gBattleMons[gBattlerAttacker].type3 != TYPE_MYSTERY))
-        && gCurrentMove != MOVE_STRUGGLE)
+    && gCurrentMove != MOVE_STRUGGLE
+    )
     {
         PREPARE_TYPE_BUFFER(gBattleTextBuff1, moveType);
         SET_BATTLER_TYPE(gBattlerAttacker, moveType);
@@ -6061,7 +6064,12 @@ static void Cmd_switchindataupdate(void)
 
     gBattleMons[gActiveBattler].type1 = GetMonData(GetBattlerPartyData(gActiveBattler), MON_DATA_TYPE1, NULL);
     gBattleMons[gActiveBattler].type2 = GetMonData(GetBattlerPartyData(gActiveBattler), MON_DATA_TYPE2, NULL);
-    gBattleMons[gActiveBattler].type3 = TYPE_MYSTERY;
+    if (GetMonData(GetBattlerPartyData(gActiveBattler), MON_DATA_ABILITY, NULL) == ABILITY_SPECIALIST
+    && GetMonData(GetBattlerPartyData(gActiveBattler), MON_DATA_TYPE2, NULL) != gBattleMoves[GetMonData(GetBattlerPartyData(gActiveBattler), MON_DATA_MOVE1, NULL)].type
+    && GetMonData(GetBattlerPartyData(gActiveBattler), MON_DATA_TYPE1, NULL) != gBattleMoves[GetMonData(GetBattlerPartyData(gActiveBattler), MON_DATA_MOVE1, NULL)].type)
+        gBattleMons[gActiveBattler].type3 = gBattleMoves[GetMonData(GetBattlerPartyData(gActiveBattler), MON_DATA_MOVE1, NULL)].type;
+    else
+        gBattleMons[gActiveBattler].type3 = TYPE_MYSTERY;
     gBattleMons[gActiveBattler].ability = GetMonData(GetBattlerPartyData(gActiveBattler), MON_DATA_ABILITY, NULL);
     gBattleMons[gActiveBattler].nature = GetMonData(GetBattlerPartyData(gActiveBattler), MON_DATA_NATURE, NULL);
 
@@ -8071,6 +8079,12 @@ static void RecalcBattlerStats(u32 battler, struct Pokemon *mon)
     gBattleMons[battler].ability = GetMonAbility(mon);
     gBattleMons[battler].type1 = GetMonData(mon, MON_DATA_TYPE1);
     gBattleMons[battler].type2 = GetMonData(mon, MON_DATA_TYPE2);
+    if (GetMonData(mon, MON_DATA_ABILITY, NULL) == ABILITY_SPECIALIST
+    && GetMonData(mon, MON_DATA_TYPE2, NULL) != gBattleMoves[GetMonData(mon, MON_DATA_MOVE1, NULL)].type
+    && GetMonData(mon, MON_DATA_TYPE1, NULL) != gBattleMoves[GetMonData(mon, MON_DATA_MOVE1, NULL)].type)
+        gBattleMons[gActiveBattler].type3 = gBattleMoves[GetMonData(mon, MON_DATA_MOVE1, NULL)].type;
+    else
+        gBattleMons[gActiveBattler].type3 = TYPE_MYSTERY;
 }
 
 static u32 GetHighestStatId(u32 battlerId)
@@ -8669,6 +8683,7 @@ static void Cmd_various(void)
             case ABILITY_SCHOOLING:         case ABILITY_COMATOSE:
             case ABILITY_SHIELDS_DOWN:      case ABILITY_DISGUISE:
             case ABILITY_RKS_SYSTEM:        case ABILITY_TRACE:
+            case ABILITY_SHAPE_SHIFTER:
                 break;
             default:
                 gBattleStruct->tracedAbility[gBattlerAbility] = gBattleMons[gActiveBattler].ability; // re-using the variable for trace
