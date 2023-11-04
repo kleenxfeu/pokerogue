@@ -97,7 +97,7 @@ void RogueSafari_CopyFromSafariMon(struct RogueSafariMon* fromMon, struct BoxPok
     COPY_MON_DATA(shinyFlag, MON_DATA_IS_SHINY);
 
     SetBoxMonData(toMon, MON_DATA_NICKNAME, fromMon->nickname);
-    SetNatureBoxMon(toMon, fromMon->nature);
+    COPY_MON_DATA(nature, MON_DATA_NATURE);
 }
 
 #undef COPY_MON_DATA

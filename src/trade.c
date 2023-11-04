@@ -1501,13 +1501,6 @@ static u8 CheckValidityOfTradeMons(u8 *aliveMons, u8 playerPartyCount, u8 player
     partnerMonIdx %= PARTY_SIZE;
     partnerSpecies = GetMonData(&gEnemyParty[partnerMonIdx], MON_DATA_SPECIES);
 
-    // Partner cant trade illegitimate Deoxys or Mew
-    if (partnerSpecies == SPECIES_DEOXYS || partnerSpecies == SPECIES_MEW)
-    {
-        if (!GetMonData(&gEnemyParty[partnerMonIdx], MON_DATA_EVENT_LEGAL))
-            return PARTNER_MON_INVALID;
-    }
-
     // Partner cant trade Egg or non-Hoenn mon if player doesn't have National Dex
     if (!IsNationalPokedexEnabled())
     {
@@ -2356,12 +2349,6 @@ static u32 CanTradeSelectedMon(struct Pokemon *playerParty, int partyCount, int 
             if (!IsSpeciesInHoennDex(species2[monIdx]))
                 return CANT_TRADE_INVALID_MON;
         }
-    }
-
-    if (species[monIdx] == SPECIES_DEOXYS || species[monIdx] == SPECIES_MEW)
-    {
-        if (!GetMonData(&playerParty[monIdx], MON_DATA_EVENT_LEGAL))
-            return CANT_TRADE_INVALID_MON;
     }
 
     // Make Eggs not count for numMonsLeft
@@ -4817,7 +4804,7 @@ static void CheckPartnersMonForRibbons(void)
 {
     u8 i;
     u8 numRibbons = 0;
-    for (i = 0; i < (MON_DATA_UNUSED_RIBBONS - MON_DATA_CHAMPION_RIBBON); i ++)
+    for (i = 0; i < 5; i ++) // Changed from 12 to 5, fixed trade freeze
     {
         numRibbons += GetMonData(&gEnemyParty[gSelectedTradeMonPositions[TRADE_PARTNER] % PARTY_SIZE], MON_DATA_CHAMPION_RIBBON + i);
     }

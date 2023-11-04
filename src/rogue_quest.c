@@ -967,9 +967,7 @@ static void UpdateMonoQuests(void)
             for(i = 0; i < gPlayerPartyCount; ++i)
             {
                 u16 species = GetMonData(&gPlayerParty[i], MON_DATA_SPECIES);
-                hasType = gBaseStats[species].type1 == type || gBaseStats[species].type2 == type;
-
-                if(species != SPECIES_NONE && !hasType)
+                if(GetMonData(&gPlayerParty[i], MON_DATA_SPECIES) != SPECIES_NONE && GetMonData(&gPlayerParty[i], MON_DATA_TYPE1) != type && GetMonData(&gPlayerParty[i], MON_DATA_TYPE2, NULL) != type )
                 {
                     TryDeactivateQuest(questId);
                     break;

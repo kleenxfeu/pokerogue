@@ -2351,8 +2351,8 @@ static void InitDomeTrainers(void)
         rankingScores[0] += GetMonData(&gPlayerParty[trainerId], MON_DATA_SPDEF, NULL);
         rankingScores[0] += GetMonData(&gPlayerParty[trainerId], MON_DATA_SPEED, NULL);
         rankingScores[0] += GetMonData(&gPlayerParty[trainerId], MON_DATA_MAX_HP, NULL);
-        monTypesBits |= gBitTable[gBaseStats[GetMonData(&gPlayerParty[trainerId], MON_DATA_SPECIES, NULL)].type1];
-        monTypesBits |= gBitTable[gBaseStats[GetMonData(&gPlayerParty[trainerId], MON_DATA_SPECIES, NULL)].type2];
+        monTypesBits |= gBitTable[GetMonData(&gPlayerParty[trainerId], MON_DATA_TYPE1, NULL)];
+        monTypesBits |= gBitTable[GetMonData(&gPlayerParty[trainerId], MON_DATA_TYPE2, NULL)];
     }
 
     // Count the number of types in the players party, to factor into the ranking

@@ -3248,10 +3248,6 @@ void FaintClearSetData(void)
 
     gBattleResources->flags->flags[gActiveBattler] = 0;
 
-    gBattleMons[gActiveBattler].type1 = gBaseStats[gBattleMons[gActiveBattler].species].type1;
-    gBattleMons[gActiveBattler].type2 = gBaseStats[gBattleMons[gActiveBattler].species].type2;
-    gBattleMons[gActiveBattler].type3 = TYPE_MYSTERY;
-
     ClearBattlerMoveHistory(gActiveBattler);
     ClearBattlerAbilityHistory(gActiveBattler);
     ClearBattlerItemEffectHistory(gActiveBattler);
@@ -3353,10 +3349,11 @@ static void DoBattleIntro(void)
             else
             {
                 memcpy(&gBattleMons[gActiveBattler], &gBattleResources->bufferB[gActiveBattler][4], sizeof(struct BattlePokemon));
-                gBattleMons[gActiveBattler].type1 = gBaseStats[gBattleMons[gActiveBattler].species].type1;
-                gBattleMons[gActiveBattler].type2 = gBaseStats[gBattleMons[gActiveBattler].species].type2;
+                gBattleMons[gActiveBattler].type1 = GetMonData(GetBattlerPartyData(gActiveBattler), MON_DATA_TYPE1, NULL);
+                gBattleMons[gActiveBattler].type2 = GetMonData(GetBattlerPartyData(gActiveBattler), MON_DATA_TYPE2, NULL);
                 gBattleMons[gActiveBattler].type3 = TYPE_MYSTERY;
-                gBattleMons[gActiveBattler].ability = GetAbilityBySpecies(gBattleMons[gActiveBattler].species, gBattleMons[gActiveBattler].abilityNum);
+                gBattleMons[gActiveBattler].ability = GetMonData(GetBattlerPartyData(gActiveBattler), MON_DATA_ABILITY, NULL);
+                gBattleMons[gActiveBattler].nature = GetMonData(GetBattlerPartyData(gActiveBattler), MON_DATA_NATURE, NULL);
                 gBattleStruct->hpOnSwitchout[GetBattlerSide(gActiveBattler)] = gBattleMons[gActiveBattler].hp;
                 gBattleMons[gActiveBattler].status2 = 0;
                 for (i = 0; i < NUM_BATTLE_STATS; i++)

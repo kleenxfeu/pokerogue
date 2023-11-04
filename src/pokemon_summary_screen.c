@@ -3273,13 +3273,15 @@ static void PrintMonOTID(void)
 
 static void PrintMonAbilityName(void)
 {
-    u16 ability = GetAbilityBySpecies(sMonSummaryScreen->summary.species, sMonSummaryScreen->summary.abilityNum);
+    struct Pokemon *mon = &sMonSummaryScreen->currentMon;
+    u16 ability = GetMonData(mon, MON_DATA_ABILITY, NULL);
     PrintTextOnWindow(AddWindowFromTemplateList(sPageInfoTemplate, PSS_DATA_WINDOW_INFO_ABILITY), gAbilityNames[ability], 0, 1, 0, 1);
 }
 
 static void PrintMonAbilityDescription(void)
 {
-    u16 ability = GetAbilityBySpecies(sMonSummaryScreen->summary.species, sMonSummaryScreen->summary.abilityNum);
+    struct Pokemon *mon = &sMonSummaryScreen->currentMon;
+    u16 ability = GetMonData(mon, MON_DATA_ABILITY, NULL);
     PrintTextOnWindow(AddWindowFromTemplateList(sPageInfoTemplate, PSS_DATA_WINDOW_INFO_ABILITY), gAbilityDescriptionPointers[ability], 0, 17, 0, 0);
 }
 
@@ -4084,6 +4086,7 @@ static void SetTypeSpritePosAndPal(u8 typeId, u8 x, u8 y, u8 spriteArrayId)
 static void SetMonTypeIcons(void)
 {
     struct PokeSummary *summary = &sMonSummaryScreen->summary;
+    struct Pokemon *mon = &sMonSummaryScreen->currentMon;
     if (summary->isEgg)
     {
         SetTypeSpritePosAndPal(TYPE_MYSTERY, 120, 48, SPRITE_ARR_ID_TYPE);
@@ -4091,10 +4094,10 @@ static void SetMonTypeIcons(void)
     }
     else
     {
-        SetTypeSpritePosAndPal(gBaseStats[summary->species].type1, 120, 48, SPRITE_ARR_ID_TYPE);
-        if (gBaseStats[summary->species].type1 != gBaseStats[summary->species].type2)
+        SetTypeSpritePosAndPal(GetMonData(mon, MON_DATA_TYPE1, NULL), 120, 48, SPRITE_ARR_ID_TYPE);
+        if (GetMonData(mon, MON_DATA_TYPE1, NULL) != GetMonData(mon, MON_DATA_TYPE2, NULL))
         {
-            SetTypeSpritePosAndPal(gBaseStats[summary->species].type2, 160, 48, SPRITE_ARR_ID_TYPE + 1);
+            SetTypeSpritePosAndPal(GetMonData(mon, MON_DATA_TYPE2, NULL), 160, 48, SPRITE_ARR_ID_TYPE + 1);
             SetSpriteInvisibility(SPRITE_ARR_ID_TYPE + 1, FALSE);
         }
         else
