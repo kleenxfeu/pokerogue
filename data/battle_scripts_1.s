@@ -7526,6 +7526,10 @@ BattleScript_AttackerFormChangeNoPopup::
 	handleformchange BS_ATTACKER, 2
 	return
 
+	BattleScript_AttackerFormChangeEnd2::
+	call BattleScript_AttackerFormChange
+	end2
+
 BattleScript_AttackerFormChangeEnd3::
 	call BattleScript_AttackerFormChange
 	end3

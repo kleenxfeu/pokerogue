@@ -295,8 +295,9 @@
 // Gen 9
 // We only need this ability atm for Hisui
 #define ABILITY_SHARPNESS 268
+#define ABILITY_SHAPE_SHIFTER 269 // custom
 
-#define ABILITIES_COUNT_GEN9 269
+#define ABILITIES_COUNT_GEN9 270
 
 #define ABILITIES_COUNT ABILITIES_COUNT_GEN9
 

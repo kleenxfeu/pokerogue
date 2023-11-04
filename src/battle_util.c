@@ -102,6 +102,7 @@ static const u16 sSkillSwapBannedAbilities[] =
     ABILITY_MULTITYPE,
     ABILITY_ILLUSION,
     ABILITY_STANCE_CHANGE,
+    ABILITY_SHAPE_SHIFTER,
     ABILITY_SCHOOLING,
     ABILITY_COMATOSE,
     ABILITY_SHIELDS_DOWN,
@@ -126,6 +127,7 @@ static const u16 sRolePlayBannedAbilities[] =
     ABILITY_ZEN_MODE,
     ABILITY_IMPOSTER,
     ABILITY_STANCE_CHANGE,
+    ABILITY_SHAPE_SHIFTER,
     ABILITY_POWER_OF_ALCHEMY,
     ABILITY_RECEIVER,
     ABILITY_SCHOOLING,
@@ -145,6 +147,7 @@ static const u16 sRolePlayBannedAttackerAbilities[] =
     ABILITY_MULTITYPE,
     ABILITY_ZEN_MODE,
     ABILITY_STANCE_CHANGE,
+    ABILITY_SHAPE_SHIFTER,
     ABILITY_SCHOOLING,
     ABILITY_COMATOSE,
     ABILITY_SHIELDS_DOWN,
@@ -160,6 +163,7 @@ static const u16 sWorrySeedBannedAbilities[] =
 {
     ABILITY_MULTITYPE,
     ABILITY_STANCE_CHANGE,
+    ABILITY_SHAPE_SHIFTER,
     ABILITY_SCHOOLING,
     ABILITY_COMATOSE,
     ABILITY_SHIELDS_DOWN,
@@ -187,6 +191,7 @@ static const u16 sGastroAcidBannedAbilities[] =
     ABILITY_SCHOOLING,
     ABILITY_SHIELDS_DOWN,
     ABILITY_STANCE_CHANGE,
+    ABILITY_SHAPE_SHIFTER,
     ABILITY_ZEN_MODE,
 };
 
@@ -202,6 +207,7 @@ static const u16 sEntrainmentBannedAttackerAbilities[] =
     ABILITY_RECEIVER,
     ABILITY_DISGUISE,
     ABILITY_POWER_CONSTRUCT,
+    ABILITY_SHAPE_SHIFTER,
     ABILITY_NEUTRALIZING_GAS,
     ABILITY_ICE_FACE,
     ABILITY_HUNGER_SWITCH,
@@ -213,6 +219,7 @@ static const u16 sEntrainmentTargetSimpleBeamBannedAbilities[] =
     ABILITY_TRUANT,
     ABILITY_MULTITYPE,
     ABILITY_STANCE_CHANGE,
+    ABILITY_SHAPE_SHIFTER,
     ABILITY_SCHOOLING,
     ABILITY_COMATOSE,
     ABILITY_SHIELDS_DOWN,
@@ -1104,6 +1111,7 @@ static const u8 sAbilitiesNotTraced[ABILITIES_COUNT] =
     [ABILITY_SCHOOLING] = 1,
     [ABILITY_SHIELDS_DOWN] = 1,
     [ABILITY_STANCE_CHANGE] = 1,
+    [ABILITY_SHAPE_SHIFTER] = 1,
     [ABILITY_TRACE] = 1,
     [ABILITY_ZEN_MODE] = 1,
 };
@@ -2633,6 +2641,7 @@ enum
     ENDTURN_ITEMS1,
     ENDTURN_LEECH_SEED,
     ENDTURN_POISON,
+    ENDTURN_DEOXYS,
     ENDTURN_BAD_POISON,
     ENDTURN_BURN,
     ENDTURN_NIGHTMARES,
@@ -2905,6 +2914,17 @@ u8 DoBattlerEndTurnEffects(void)
                     gBattlescriptCurrInstr = BattleScript_WrapEnds;
                 }
                 BattleScriptExecute(gBattlescriptCurrInstr);
+                effect++;
+            }
+            gBattleStruct->turnEffectsTracker++;
+            break;
+        case ENDTURN_DEOXYS:
+            if ((GET_BASE_SPECIES_ID(gBattleMons[gActiveBattler].species) == SPECIES_DEOXYS)
+            && gBattleMons[gActiveBattler].species != SPECIES_DEOXYS_SPEED
+            && gBattleMons[gActiveBattler].ability == ABILITY_SHAPE_SHIFTER)
+            {
+                gBattleMons[gActiveBattler].species = SPECIES_DEOXYS_SPEED;
+                BattleScriptExecute(BattleScript_AttackerFormChangeEnd2);
                 effect++;
             }
             gBattleStruct->turnEffectsTracker++;
@@ -5339,6 +5359,7 @@ u8 AbilityBattleEffects(u8 caseID, u8 battler, u16 ability, u8 special, u16 move
                 case ABILITY_SCHOOLING:
                 case ABILITY_SHIELDS_DOWN:
                 case ABILITY_STANCE_CHANGE:
+                case ABILITY_SHAPE_SHIFTER:
                     break;
                 default:
                     gLastUsedAbility = gBattleMons[gBattlerAttacker].ability = ABILITY_MUMMY;
@@ -5368,6 +5389,7 @@ u8 AbilityBattleEffects(u8 caseID, u8 battler, u16 ability, u8 special, u16 move
                 case ABILITY_RKS_SYSTEM:
                 case ABILITY_SCHOOLING:
                 case ABILITY_STANCE_CHANGE:
+                case ABILITY_SHAPE_SHIFTER:
                 case ABILITY_WONDER_GUARD:
                 case ABILITY_ZEN_MODE:
                     break;
@@ -6056,6 +6078,7 @@ bool32 IsNeutralizingGasBannedAbility(u32 ability)
     case ABILITY_MULTITYPE:
     case ABILITY_ZEN_MODE:
     case ABILITY_STANCE_CHANGE:
+    case ABILITY_SHAPE_SHIFTER:
     case ABILITY_POWER_CONSTRUCT:
     case ABILITY_SCHOOLING:
     case ABILITY_RKS_SYSTEM:
@@ -9833,6 +9856,9 @@ void UndoFormChange(u32 monId, u32 side, bool32 isSwitchingOut)
         {SPECIES_GRENINJA_ASH,                  SPECIES_GRENINJA_BATTLE_BOND, FALSE},
         {SPECIES_MELOETTA_PIROUETTE,            SPECIES_MELOETTA,             FALSE},
         {SPECIES_AEGISLASH_BLADE,               SPECIES_AEGISLASH,            TRUE},
+        {SPECIES_DEOXYS_DEFENSE,                SPECIES_DEOXYS,               TRUE},
+        {SPECIES_DEOXYS_ATTACK,                 SPECIES_DEOXYS,               TRUE},
+        {SPECIES_DEOXYS_SPEED,                  SPECIES_DEOXYS,               TRUE},
         {SPECIES_DARMANITAN_ZEN_MODE,           SPECIES_DARMANITAN,           TRUE},
         {SPECIES_MINIOR,                        SPECIES_MINIOR_CORE_RED,      TRUE},
         {SPECIES_MINIOR_METEOR_BLUE,            SPECIES_MINIOR_CORE_BLUE,     TRUE},

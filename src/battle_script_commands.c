@@ -1402,6 +1402,32 @@ static bool32 NoTargetPresent(u8 battlerId, u32 move)
     return FALSE;
 }
 
+static bool32 TryDeoxysFormChange(void)
+{
+    if ((GET_BASE_SPECIES_ID(gBattleMons[gBattlerAttacker].species) == SPECIES_DEOXYS)
+    && gBattleMons[gBattlerAttacker].species != SPECIES_DEOXYS_ATTACK
+    && gBattleMoves[gCurrentMove].power > 0
+    && gBattleMons[gBattlerAttacker].ability == ABILITY_SHAPE_SHIFTER)
+    {
+        gBattleMons[gBattlerAttacker].species = SPECIES_DEOXYS_ATTACK;
+        BattleScriptPushCursor();
+        gBattlescriptCurrInstr = BattleScript_AttackerFormChange;
+        return TRUE;
+    }
+    else if ((GET_BASE_SPECIES_ID(gBattleMons[gBattlerTarget].species) == SPECIES_DEOXYS)
+    && gBattleMons[gBattlerTarget].species != SPECIES_DEOXYS_DEFENSE
+    && gBattleMoves[gCurrentMove].power > 0
+    && gBattleMons[gBattlerTarget].ability == ABILITY_SHAPE_SHIFTER)
+    {
+        gBattleMons[gBattlerTarget].species = SPECIES_DEOXYS_DEFENSE;
+        BattleScriptPushCursor();
+        gBattlescriptCurrInstr = BattleScript_TargetFormChange;
+        return TRUE;
+    }
+    else
+        return FALSE;
+}
+
 static bool32 TryAegiFormChange(void)
 {
     // Only Aegislash with Stance Change can transform, transformed mons cannot.
@@ -1495,11 +1521,17 @@ static void Cmd_attackcanceler(void)
         return;
     }
 
+    if (TryDeoxysFormChange())
+        return;
+
     // Check Protean activation.
-    if ((attackerAbility == ABILITY_PROTEAN || attackerAbility == ABILITY_LIBERO)
+    if (
+    (GetBattlerAbility(gBattlerAttacker) == ABILITY_PROTEAN || GetBattlerAbility(gBattlerAttacker) == ABILITY_LIBERO
+    || (GetBattlerAbility(gBattlerAttacker) == ABILITY_SHAPE_SHIFTER && GET_BASE_SPECIES_ID(gBattleMons[gBattlerAttacker].species) == SPECIES_DEOXYS))
         && (gBattleMons[gBattlerAttacker].type1 != moveType || gBattleMons[gBattlerAttacker].type2 != moveType ||
             (gBattleMons[gBattlerAttacker].type3 != moveType && gBattleMons[gBattlerAttacker].type3 != TYPE_MYSTERY))
-        && gCurrentMove != MOVE_STRUGGLE)
+    && gCurrentMove != MOVE_STRUGGLE
+    )
     {
         PREPARE_TYPE_BUFFER(gBattleTextBuff1, moveType);
         SET_BATTLER_TYPE(gBattlerAttacker, moveType);
@@ -8771,6 +8803,7 @@ static void Cmd_various(void)
             case ABILITY_SCHOOLING:         case ABILITY_COMATOSE:
             case ABILITY_SHIELDS_DOWN:      case ABILITY_DISGUISE:
             case ABILITY_RKS_SYSTEM:        case ABILITY_TRACE:
+            case ABILITY_SHAPE_SHIFTER:
                 break;
             default:
                 gBattleStruct->tracedAbility[gBattlerAbility] = gBattleMons[gActiveBattler].ability; // re-using the variable for trace

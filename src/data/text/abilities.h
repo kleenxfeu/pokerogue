@@ -255,6 +255,7 @@ static const u8 sGrimNeighDescription[] = _("KOs boost Sp. Atk stat.");
 static const u8 sAsOneIceRiderDescription[] = _("Unnerve and Chilling Neigh.");
 static const u8 sAsOneShadowRiderDescription[] = _("Unnerve and Grim Neigh.");
 static const u8 sSharpnessDescription[] = _("Strengthens cutting moves.");
+static const u8 sShapeShifterDescription[] = _("Type and form change at will.");
 
 #if B_EXPANDED_ABILITY_NAMES == TRUE
 const u8 gAbilityNames[ABILITIES_COUNT][ABILITY_NAME_LENGTH + 1] =
@@ -528,6 +529,7 @@ const u8 gAbilityNames[ABILITIES_COUNT][ABILITY_NAME_LENGTH + 1] =
     [ABILITY_AS_ONE_ICE_RIDER] = _("As One"),
     [ABILITY_AS_ONE_SHADOW_RIDER] = _("As One"),
     [ABILITY_SHARPNESS] = _("Sharpness"),
+    [ABILITY_SHAPE_SHIFTER] = _("Shape Shifter"),
 };
 #else   // 12 characters
 const u8 gAbilityNames[ABILITIES_COUNT][ABILITY_NAME_LENGTH + 1] =
@@ -801,6 +803,7 @@ const u8 gAbilityNames[ABILITIES_COUNT][ABILITY_NAME_LENGTH + 1] =
     [ABILITY_AS_ONE_ICE_RIDER] = _("As One"),
     [ABILITY_AS_ONE_SHADOW_RIDER] = _("As One"),
     [ABILITY_SHARPNESS] = _("Sharpness"),
+    [ABILITY_SHAPE_SHIFTER] = _("ShapeShifter"),
 };
 #endif
 
@@ -1075,4 +1078,5 @@ const u8 *const gAbilityDescriptionPointers[ABILITIES_COUNT] =
     [ABILITY_AS_ONE_ICE_RIDER] = sAsOneIceRiderDescription,
     [ABILITY_AS_ONE_SHADOW_RIDER] = sAsOneShadowRiderDescription,
     [ABILITY_SHARPNESS] = sSharpnessDescription,
+    [ABILITY_SHAPE_SHIFTER] = sShapeShifterDescription,
 };
