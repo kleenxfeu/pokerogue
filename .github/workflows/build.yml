@@ -47,6 +47,20 @@ jobs:
 
       - name: Agbcc
         run: make -j${nproc} -O all
+      - uses: actions/upload-artifact@v2
+        with:
+          name: pokerogue
+          path: pokeemerald.gba
+          
+      - uses: actions/upload-artifact@v2
+        with:
+          name: pokerogue_elf
+          path: pokeemerald.elf
+          
+      - uses: actions/upload-artifact@v2
+        with:
+          name: pokerogue_map
+          path: pokeemerald.map
 
       - name: Update Memory Stats
         uses: actions/upload-artifact@v3
