@@ -295,7 +295,7 @@ include songs.mk
 $(CRY_SUBDIR)/uncomp_%.bin: $(CRY_SUBDIR)/uncomp_%.aif ; $(AIF) $< $@
 $(CRY_SUBDIR)/%.bin: $(CRY_SUBDIR)/%.aif ; $(AIF) $< $@ --compress
 sound/%.bin: sound/%.aif ; $(AIF) $< $@
-data/%.inc: data/%.pory; $(SCRIPT) -i $< -o $@ $(PORYSCRIPTARGS)
+data/%.inc: data/%.pory; $(SCRIPT) -l 25 $ -i $< -o $@ $(PORYSCRIPTARGS)
 
 
 ifeq ($(MODERN),0)
