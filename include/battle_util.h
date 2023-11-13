@@ -32,6 +32,8 @@
 #define ABILITYEFFECT_SWITCH_IN_TERRAIN          254
 #define ABILITYEFFECT_SWITCH_IN_WEATHER          255
 
+#define SIMULATION_ABILITY_EFFECTS               0xFFFC
+
 // For the first argument of ItemBattleEffects, to deteremine which block of item effects to try
 #define ITEMEFFECT_ON_SWITCH_IN                 0
 #define ITEMEFFECT_NORMAL                       1
@@ -130,7 +132,7 @@ u8 GetBattleMonMoveSlot(struct BattlePokemon *battleMon, u16 move);
 u32 GetBattlerWeight(u8 battlerId);
 s32 CalculateMoveDamage(u16 move, u8 battlerAtk, u8 battlerDef, u8 moveType, s32 fixedBasePower, bool32 isCrit, bool32 randomFactor, bool32 updateFlags);
 s32 CalculateMoveDamageAndEffectiveness(u16 move, u8 battlerAtk, u8 battlerDef, u8 moveType, u16 *typeEffectivenessModifier);
-u16 CalcTypeEffectivenessMultiplier(u16 move, u8 moveType, u8 battlerAtk, u8 battlerDef, bool32 recordAbilities);
+u16 CalcTypeEffectivenessMultiplier(u16 move, u8 moveType, u8 battlerAtk, u8 battlerDef, bool32 recordAbilities, u8 testDefenderType);
 u16 CalcPartyMonTypeEffectivenessMultiplier(u16 move, u16 speciesDef, u16 abilityDef);
 u16 GetTypeModifier(u8 atkType, u8 defType);
 s32 GetStealthHazardDamage(u8 hazardType, u8 battlerId);

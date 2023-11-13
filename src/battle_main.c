@@ -3350,6 +3350,7 @@ static void DoBattleIntro(void)
                 gBattleMons[gActiveBattler].nature = GetMonData(GetBattlerPartyData(gActiveBattler), MON_DATA_NATURE, NULL);
                 gBattleStruct->hpOnSwitchout[GetBattlerSide(gActiveBattler)] = gBattleMons[gActiveBattler].hp;
                 gBattleMons[gActiveBattler].status2 = 0;
+                gBattleMons[gActiveBattler].defenseMultitypeDone = 0;
                 for (i = 0; i < NUM_BATTLE_STATS; i++)
                     gBattleMons[gActiveBattler].statStages[i] = DEFAULT_STAT_STAGE;
             }

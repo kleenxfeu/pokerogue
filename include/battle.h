@@ -637,6 +637,7 @@ struct BattleStruct
         typeArg = gBattleMoves[move].type;                            \
 }
 
+#define TYPE_CANCELED_BY_PRIMAL(type)((type == TYPE_FIRE && (gBattleWeather & B_WEATHER_RAIN_PRIMAL)) || (type == TYPE_WATER && (gBattleWeather & B_WEATHER_SUN_PRIMAL)))
 #define IS_MOVE_PHYSICAL(move)(GetBattleMoveSplit(move) == SPLIT_PHYSICAL)
 #define IS_MOVE_SPECIAL(move)(GetBattleMoveSplit(move) == SPLIT_SPECIAL)
 #define IS_MOVE_STATUS(move)(gBattleMoves[move].split == SPLIT_STATUS)

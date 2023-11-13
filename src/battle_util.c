@@ -4187,17 +4187,20 @@ u8 AbilityBattleEffects(u8 caseID, u8 battler, u16 ability, u8 special, u16 move
     speciesDef = gBattleMons[gBattlerTarget].species;
     pidDef = gBattleMons[gBattlerTarget].personality;
 
-    if (special)
+    if (special && special != SIMULATION_ABILITY_EFFECTS)
         gLastUsedAbility = special;
     else
         gLastUsedAbility = GetBattlerAbility(battler);
 
-    if (moveArg)
+    if (moveArg && special != SIMULATION_ABILITY_EFFECTS)
         move = moveArg;
     else
         move = gCurrentMove;
 
-    GET_MOVE_TYPE(move, moveType);
+    if (special == SIMULATION_ABILITY_EFFECTS)
+        moveType = moveArg & DYNAMIC_TYPE_MASK;
+    else
+        GET_MOVE_TYPE(move, moveType);
 
     switch (caseID)
     {
@@ -4416,7 +4419,7 @@ u8 AbilityBattleEffects(u8 caseID, u8 battler, u16 ability, u8 special, u16 move
                         {
                             move = gBattleMons[i].moves[j];
                             GET_MOVE_TYPE(move, moveType);
-                            if (CalcTypeEffectivenessMultiplier(move, moveType, i, battler, FALSE) >= UQ_4_12(2.0))
+                            if (CalcTypeEffectivenessMultiplier(move, moveType, i, battler, FALSE, 0) >= UQ_4_12(2.0))
                             {
                                 effect++;
                                 break;
@@ -5010,30 +5013,36 @@ u8 AbilityBattleEffects(u8 caseID, u8 battler, u16 ability, u8 special, u16 move
             case ABILITY_FLASH_FIRE:
                 if (moveType == TYPE_FIRE && !((gBattleMons[battler].status1 & STATUS1_FREEZE) && B_FLASH_FIRE_FROZEN <= GEN_4))
                 {
-                    if (!(gBattleResources->flags->flags[battler] & RESOURCE_FLAG_FLASH_FIRE))
+                    if (special != SIMULATION_ABILITY_EFFECTS)
                     {
-                        gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_FLASH_FIRE_BOOST;
-                        if (gProtectStructs[gBattlerAttacker].notFirstStrike)
-                            gBattlescriptCurrInstr = BattleScript_FlashFireBoost;
+                        if (!(gBattleResources->flags->flags[battler] & RESOURCE_FLAG_FLASH_FIRE))
+                        {
+                            gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_FLASH_FIRE_BOOST;
+                            if (gProtectStructs[gBattlerAttacker].notFirstStrike)
+                                gBattlescriptCurrInstr = BattleScript_FlashFireBoost;
+                            else
+                                gBattlescriptCurrInstr = BattleScript_FlashFireBoost_PPLoss;
+                            gBattleResources->flags->flags[battler] |= RESOURCE_FLAG_FLASH_FIRE;
+                            effect = 3;
+                        }
                         else
-                            gBattlescriptCurrInstr = BattleScript_FlashFireBoost_PPLoss;
-
-                        gBattleResources->flags->flags[battler] |= RESOURCE_FLAG_FLASH_FIRE;
-                        effect = 3;
+                        {
+                            gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_FLASH_FIRE_NO_BOOST;
+                            if (gProtectStructs[gBattlerAttacker].notFirstStrike)
+                                gBattlescriptCurrInstr = BattleScript_FlashFireBoost;
+                            else
+                                gBattlescriptCurrInstr = BattleScript_FlashFireBoost_PPLoss;
+                            effect = 3;
+                        }
                     }
                     else
-                    {
-                        gBattleCommunication[MULTISTRING_CHOOSER] = B_MSG_FLASH_FIRE_NO_BOOST;
-                        if (gProtectStructs[gBattlerAttacker].notFirstStrike)
-                            gBattlescriptCurrInstr = BattleScript_FlashFireBoost;
-                        else
-                            gBattlescriptCurrInstr = BattleScript_FlashFireBoost_PPLoss;
-
                         effect = 3;
-                    }
                 }
                 break;
             }
+
+            if (special == SIMULATION_ABILITY_EFFECTS && effect)
+                return effect;
 
             if (effect == 1) // Drain Hp ability.
             {
@@ -5927,6 +5936,9 @@ u8 AbilityBattleEffects(u8 caseID, u8 battler, u16 ability, u8 special, u16 move
         }
         break;
     }
+    
+    if (special == SIMULATION_ABILITY_EFFECTS)
+        return effect;
 
     if (effect && gLastUsedAbility != 0xFF)
         RecordAbilityBattle(battler, gLastUsedAbility);
@@ -7799,6 +7811,9 @@ bool32 IsBattlerProtected(u8 battlerId, u16 move)
 // Only called directly when calculating damage type effectiveness
 static bool32 IsBattlerGrounded2(u8 battlerId, bool32 considerInverse)
 {
+    u32 isMultitypeOptimizingDefense = battlerId;
+    battlerId = battlerId & 0xF;
+
     if (GetBattlerHoldEffect(battlerId, TRUE) == HOLD_EFFECT_IRON_BALL)
         return TRUE;
     if (gFieldStatuses & STATUS_FIELD_GRAVITY)
@@ -7817,7 +7832,8 @@ static bool32 IsBattlerGrounded2(u8 battlerId, bool32 considerInverse)
         return FALSE;
     if (GetBattlerAbility(battlerId) == ABILITY_LEVITATE)
         return FALSE;
-    if (IS_BATTLER_OF_TYPE(battlerId, TYPE_FLYING) && (!considerInverse || !FlagGet(B_FLAG_INVERSE_BATTLE)))
+    if ((IS_BATTLER_OF_TYPE(battlerId, TYPE_FLYING) && (!considerInverse || !FlagGet(B_FLAG_INVERSE_BATTLE)))
+        || isMultitypeOptimizingDefense & F_DYNAMIC_TYPE_1)
         return FALSE;
     return TRUE;
 }
@@ -9150,19 +9166,22 @@ static s32 DoMoveDamageCalc(u16 move, u8 battlerAtk, u8 battlerDef, u8 moveType,
 s32 CalculateMoveDamage(u16 move, u8 battlerAtk, u8 battlerDef, u8 moveType, s32 fixedBasePower, bool32 isCrit, bool32 randomFactor, bool32 updateFlags)
 {
     return DoMoveDamageCalc(move, battlerAtk, battlerDef, moveType, fixedBasePower, isCrit, randomFactor,
-                            updateFlags, CalcTypeEffectivenessMultiplier(move, moveType, battlerAtk, battlerDef, updateFlags));
+                            updateFlags, CalcTypeEffectivenessMultiplier(move, moveType, battlerAtk, battlerDef, updateFlags, 0));
 }
 
 // for AI - get move damage and effectiveness with one function call
 s32 CalculateMoveDamageAndEffectiveness(u16 move, u8 battlerAtk, u8 battlerDef, u8 moveType, u16 *typeEffectivenessModifier)
 {
-    *typeEffectivenessModifier = CalcTypeEffectivenessMultiplier(move, moveType, battlerAtk, battlerDef, FALSE);
+    *typeEffectivenessModifier = CalcTypeEffectivenessMultiplier(move, moveType, battlerAtk, battlerDef, FALSE, 0);
     return DoMoveDamageCalc(move, battlerAtk, battlerDef, moveType, 0, FALSE, FALSE, FALSE, *typeEffectivenessModifier);
 }
 
 static void MulByTypeEffectiveness(u16 *modifier, u16 move, u8 moveType, u8 battlerDef, u8 defType, u8 battlerAtk, bool32 recordAbilities)
 {
-    u16 mod = GetTypeModifier(moveType, defType);
+    u16 mod = 0;
+    u32 defTypeWithEventualMask = defType;
+    defType = defType & DYNAMIC_TYPE_MASK;
+    mod = GetTypeModifier(moveType, defType);
 
     if (mod == UQ_4_12(0.0) && GetBattlerHoldEffect(battlerDef, TRUE) == HOLD_EFFECT_RING_TARGET)
     {
@@ -9186,7 +9205,10 @@ static void MulByTypeEffectiveness(u16 *modifier, u16 move, u8 moveType, u8 batt
     if (gBattleMoves[move].effect == EFFECT_FREEZE_DRY && defType == TYPE_WATER)
         mod = UQ_4_12(2.0);
     if (moveType == TYPE_GROUND && defType == TYPE_FLYING && IsBattlerGrounded(battlerDef) && mod == UQ_4_12(0.0))
-        mod = UQ_4_12(1.0);
+    {
+        if (defTypeWithEventualMask & DYNAMIC_TYPE_MASK && IsBattlerGrounded(F_DYNAMIC_TYPE_1 | battlerDef))
+            mod = UQ_4_12(1.0);
+    }
     if (moveType == TYPE_FIRE && gDisableStructs[battlerDef].tarShot)
         mod = UQ_4_12(2.0);
 
@@ -9223,17 +9245,21 @@ static void UpdateMoveResultFlags(u16 modifier)
     }
 }
 
-static u16 CalcTypeEffectivenessMultiplierInternal(u16 move, u8 moveType, u8 battlerAtk, u8 battlerDef, bool32 recordAbilities, u16 modifier)
+static u16 CalcTypeEffectivenessMultiplierInternal(u16 move, u8 moveType, u8 battlerAtk, u8 battlerDef, bool32 recordAbilities, u16 modifier, u8 testDefenderType)
 {
     u16 defAbility = GetBattlerAbility(battlerDef);
-
-    MulByTypeEffectiveness(&modifier, move, moveType, battlerDef, gBattleMons[battlerDef].type1, battlerAtk, recordAbilities);
-    if (gBattleMons[battlerDef].type2 != gBattleMons[battlerDef].type1)
-        MulByTypeEffectiveness(&modifier, move, moveType, battlerDef, gBattleMons[battlerDef].type2, battlerAtk, recordAbilities);
-    if (gBattleMons[battlerDef].type3 != TYPE_MYSTERY && gBattleMons[battlerDef].type3 != gBattleMons[battlerDef].type2
-        && gBattleMons[battlerDef].type3 != gBattleMons[battlerDef].type1)
-        MulByTypeEffectiveness(&modifier, move, moveType, battlerDef, gBattleMons[battlerDef].type3, battlerAtk, recordAbilities);
-
+    
+    if (testDefenderType & F_DYNAMIC_TYPE_1)
+        MulByTypeEffectiveness(&modifier, move, moveType, battlerDef, testDefenderType, battlerAtk, recordAbilities);
+    else
+    {
+        MulByTypeEffectiveness(&modifier, move, moveType, battlerDef, gBattleMons[battlerDef].type1, battlerAtk, recordAbilities);
+        if (gBattleMons[battlerDef].type2 != gBattleMons[battlerDef].type1)
+          MulByTypeEffectiveness(&modifier, move, moveType, battlerDef, gBattleMons[battlerDef].type2, battlerAtk, recordAbilities);
+      if (gBattleMons[battlerDef].type3 != TYPE_MYSTERY && gBattleMons[battlerDef].type3 != gBattleMons[battlerDef].type2
+          && gBattleMons[battlerDef].type3 != gBattleMons[battlerDef].type1)
+          MulByTypeEffectiveness(&modifier, move, moveType, battlerDef, gBattleMons[battlerDef].type3, battlerAtk, recordAbilities);
+    }
     if (moveType == TYPE_GROUND && !IsBattlerGrounded2(battlerDef, TRUE) && !(gBattleMoves[move].flags & FLAG_DMG_UNGROUNDED_IGNORE_TYPE_IF_FLYING))
     {
         modifier = UQ_4_12(0.0);
@@ -9280,15 +9306,15 @@ static u16 CalcTypeEffectivenessMultiplierInternal(u16 move, u8 moveType, u8 bat
     return modifier;
 }
 
-u16 CalcTypeEffectivenessMultiplier(u16 move, u8 moveType, u8 battlerAtk, u8 battlerDef, bool32 recordAbilities)
+u16 CalcTypeEffectivenessMultiplier(u16 move, u8 moveType, u8 battlerAtk, u8 battlerDef, bool32 recordAbilities, u8 testDefenderType)
 {
     u16 modifier = UQ_4_12(1.0);
 
     if (move != MOVE_STRUGGLE && moveType != TYPE_MYSTERY)
     {
-        modifier = CalcTypeEffectivenessMultiplierInternal(move, moveType, battlerAtk, battlerDef, recordAbilities, modifier);
+        modifier = CalcTypeEffectivenessMultiplierInternal(move, moveType, battlerAtk, battlerDef, recordAbilities, modifier, testDefenderType);
         if (gBattleMoves[move].effect == EFFECT_TWO_TYPED_MOVE)
-            modifier = CalcTypeEffectivenessMultiplierInternal(move, gBattleMoves[move].argument, battlerAtk, battlerDef, recordAbilities, modifier);
+            modifier = CalcTypeEffectivenessMultiplierInternal(move, gBattleMoves[move].argument, battlerAtk, battlerDef, recordAbilities, modifier, testDefenderType);
     }
 
     if (recordAbilities)
@@ -9562,7 +9588,7 @@ void UndoEnemyMegaEvolution(u32 monId)
 
 void UndoFormChange(u32 monId, u32 side, bool32 isSwitchingOut)
 {
-    u32 i, currSpecies;
+    u32 i, currSpecies, speciesArceus;
     struct Pokemon *party = (side == B_SIDE_PLAYER) ? gPlayerParty : gEnemyParty;
     static const u16 species[][3] =
     {
@@ -9586,9 +9612,17 @@ void UndoFormChange(u32 monId, u32 side, bool32 isSwitchingOut)
         {SPECIES_DARMANITAN_ZEN_MODE_GALARIAN,  SPECIES_DARMANITAN_GALARIAN,  TRUE},
     };
 
+    speciesArceus = SPECIES_ARCEUS;
     currSpecies = GetMonData(&party[monId], MON_DATA_SPECIES, NULL);
     for (i = 0; i < ARRAY_COUNT(species); i++)
     {
+        if (GET_BASE_SPECIES_ID(currSpecies) == SPECIES_ARCEUS
+        && ItemId_GetHoldEffect(GetMonData(&party[monId],MON_DATA_HELD_ITEM, NULL)) != HOLD_EFFECT_PLATE)
+        {
+            SetMonData(&party[monId], MON_DATA_SPECIES, &speciesArceus);
+            CalculateMonStats(&party[monId]);
+            break;
+        }
         if (currSpecies == species[i][0] && (!isSwitchingOut || species[i][2] == TRUE))
         {
             SetMonData(&party[monId], MON_DATA_SPECIES, &species[i][1]);

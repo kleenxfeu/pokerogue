@@ -672,7 +672,7 @@ bool32 MovesWithSplitUnusable(u32 attacker, u32 target, u32 split)
         {
             SetTypeBeforeUsingMove(moves[i], attacker);
             GET_MOVE_TYPE(moves[i], moveType);
-            if (CalcTypeEffectivenessMultiplier(moves[i], moveType, attacker, target, FALSE) != 0)
+            if (CalcTypeEffectivenessMultiplier(moves[i], moveType, attacker, target, FALSE, 0) != 0)
                 usable |= gBitTable[i];
         }
     }
@@ -967,7 +967,7 @@ u16 AI_GetTypeEffectiveness(u16 move, u8 battlerAtk, u8 battlerDef)
     gBattleStruct->dynamicMoveType = 0;
     SetTypeBeforeUsingMove(move, battlerAtk);
     GET_MOVE_TYPE(move, moveType);
-    typeEffectiveness = CalcTypeEffectivenessMultiplier(move, moveType, battlerAtk, battlerDef, FALSE);
+    typeEffectiveness = CalcTypeEffectivenessMultiplier(move, moveType, battlerAtk, battlerDef, FALSE, 0);
 
     RestoreBattlerData(battlerAtk);
     RestoreBattlerData(battlerDef);
