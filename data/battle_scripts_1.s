@@ -8367,23 +8367,39 @@ BattleScript_PsychicSurgeActivates::
 
 BattleScript_BadDreamsActivates::
 	setbyte gBattlerTarget, 0
-	call BattleScript_AbilityPopUp
 BattleScript_BadDreamsLoop:
-	trygetbaddreamstarget BattleScript_BadDreamsEnd
-	dmg_1_8_targethp
-	orword gHitMarker, HITMARKER_IGNORE_SUBSTITUTE | HITMARKER_PASSIVE_DAMAGE
+	jumpiftargetally BattleScript_BadDreamsIncrement
+	jumpifability BS_TARGET, ABILITY_MAGIC_GUARD, BattleScript_BadDreamsIncrement
+	jumpifability BS_TARGET, ABILITY_COMATOSE, BattleScript_BadDreams_Dmg
+	jumpifstatus BS_TARGET, STATUS1_SLEEP, BattleScript_BadDreams_Dmg
+	goto BattleScript_BadDreamsIncrement
+BattleScript_BadDreams_Dmg:
+	jumpifbyteequal sFIXED_ABILITY_POPUP, sZero, BattleScript_BadDreams_ShowPopUp
+BattleScript_BadDreams_DmgAfterPopUp:
 	printstring STRINGID_BADDREAMSDMG
 	waitmessage B_WAIT_TIME_LONG
-	jumpifability BS_TARGET, ABILITY_MAGIC_GUARD, BattleScript_BadDreamsIncrement
+	dmg_1_8_targethp
+	orword gHitMarker, HITMARKER_IGNORE_SUBSTITUTE | HITMARKER_PASSIVE_DAMAGE
 	healthbarupdate BS_TARGET
 	datahpupdate BS_TARGET
-	tryfaintmon BS_TARGET
-	checkteamslost BattleScript_BadDreamsIncrement
+	jumpifhasnohp BS_TARGET, BattleScript_BadDreams_HidePopUp
 BattleScript_BadDreamsIncrement:
 	addbyte gBattlerTarget, 1
-	goto BattleScript_BadDreamsLoop
+	jumpifbytenotequal gBattlerTarget, gBattlersCount, BattleScript_BadDreamsLoop
+	jumpifbyteequal sFIXED_ABILITY_POPUP, sZero, BattleScript_BadDreamsEnd
+	destroyabilitypopup
+	pause 15
 BattleScript_BadDreamsEnd:
 	end3
+BattleScript_BadDreams_ShowPopUp:
+	copybyte gBattlerAbility, gBattlerAttacker
+	call BattleScript_AbilityPopUp
+	setbyte sFIXED_ABILITY_POPUP, TRUE
+	goto BattleScript_BadDreams_DmgAfterPopUp
+BattleScript_BadDreams_HidePopUp:
+	destroyabilitypopup
+	tryfaintmon BS_TARGET
+	goto BattleScript_BadDreamsIncrement
 
 BattleScript_TookAttack::
 	attackstring

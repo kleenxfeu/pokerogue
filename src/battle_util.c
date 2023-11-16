@@ -4066,7 +4066,7 @@ static bool32 TryChangeBattleTerrain(u32 battler, u32 statusFlag, u8 *timer)
 {
     if (!(gFieldStatuses & statusFlag))
     {
-        gFieldStatuses &= ~(STATUS_FIELD_MISTY_TERRAIN | STATUS_FIELD_GRASSY_TERRAIN | EFFECT_ELECTRIC_TERRAIN | EFFECT_PSYCHIC_TERRAIN);
+        gFieldStatuses &= ~(STATUS_FIELD_TERRAIN_PERMANENT | STATUS_FIELD_TERRAIN_ANY );
         gFieldStatuses |= statusFlag;
 
         if (GetBattlerHoldEffect(battler, TRUE) == HOLD_EFFECT_TERRAIN_EXTENDER)
@@ -4187,7 +4187,7 @@ static u8 ForewarnChooseMove(u32 battler)
     free(data);
 }
 
-u8 AbilityBattleEffects(u8 caseID, u8 battler, u16 ability, u8 special, u16 moveArg)
+u8 AbilityBattleEffects(u8 caseID, u8 battler, u16 ability, u16 special, u16 moveArg)
 {
     u8 effect = 0;
     u32 speciesAtk, speciesDef;
@@ -4854,14 +4854,8 @@ u8 AbilityBattleEffects(u8 caseID, u8 battler, u16 ability, u8 special, u16 move
                 gDisableStructs[gBattlerAttacker].truantCounter ^= 1;
                 break;
             case ABILITY_BAD_DREAMS:
-                if (gBattleMons[battler].status1 & STATUS1_SLEEP
-                    || gBattleMons[BATTLE_OPPOSITE(battler)].status1 & STATUS1_SLEEP
-                    || GetBattlerAbility(battler) == ABILITY_COMATOSE
-                    || GetBattlerAbility(BATTLE_OPPOSITE(battler)) == ABILITY_COMATOSE)
-                {
-                    BattleScriptPushCursorAndCallback(BattleScript_BadDreamsActivates);
-                    effect++;
-                }
+                BattleScriptPushCursorAndCallback(BattleScript_BadDreamsActivates);
+                effect++;
                 break;
             SOLAR_POWER_HP_DROP:
             case ABILITY_SOLAR_POWER:
@@ -5962,7 +5956,7 @@ u8 AbilityBattleEffects(u8 caseID, u8 battler, u16 ability, u8 special, u16 move
     if (special == SIMULATION_ABILITY_EFFECTS)
         return effect;
 
-    if (effect && gLastUsedAbility != 0xFF)
+    if (effect && gLastUsedAbility != 0xFFFF) // TODO use a label instead of 0xFFFF
         RecordAbilityBattle(battler, gLastUsedAbility);
     if (effect && caseID <= ABILITYEFFECT_MOVE_END)
         gBattlerAbility = battler;

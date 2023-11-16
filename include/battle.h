@@ -146,6 +146,8 @@ struct ProtectStruct
     u16 statFell:1;
     u16 pranksterElevated:1;
     u16 quickDraw:1;
+    u16 quickDrawRandom:1;
+    u16 quickClawRandom:1;
     u16 beakBlastCharge:1;
     u32 physicalDmg;
     u32 specialDmg;

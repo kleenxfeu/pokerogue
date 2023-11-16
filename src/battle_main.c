@@ -4087,10 +4087,10 @@ static void HandleTurnActionSelectionState(void)
                     {
                         BtlController_EmitChoosePokemon(BUFFER_A, PARTY_ACTION_CANT_SWITCH, PARTY_SIZE, ABILITY_NONE, gBattleStruct->battlerPartyOrders[gActiveBattler]);
                     }
-                    else if ((i = IsAbilityPreventingEscape(gActiveBattler)
+                    else if ((i = IsAbilityPreventingEscape(gActiveBattler) // IsAbilityPreventingEscape returns (battlerresponsible + 1), so we substract afterward
                               && ItemId_GetHoldEffect(gBattleMons[gActiveBattler].item) != HOLD_EFFECT_SHED_SHELL))
                     {
-                        BtlController_EmitChoosePokemon(BUFFER_A, ((i) << 4) | PARTY_ACTION_ABILITY_PREVENTS, PARTY_SIZE, gBattleMons[i].ability, gBattleStruct->battlerPartyOrders[gActiveBattler]);
+                        BtlController_EmitChoosePokemon(BUFFER_A, ((i - 1) << 4) | PARTY_ACTION_ABILITY_PREVENTS, PARTY_SIZE, gBattleMons[i - 1].ability, gBattleStruct->battlerPartyOrders[gActiveBattler]);
                     }
                     else
                     {
@@ -4612,27 +4612,44 @@ u8 GetWhoStrikesFirst(u8 battler1, u8 battler2, bool8 ignoreChosenMoves)
     speedBattler1 = GetBattlerTotalSpeedStat(battler1);
     holdEffectBattler1 = GetBattlerHoldEffect(battler1, TRUE);
     // Quick Draw
-    if (!ignoreChosenMoves && ability1 == ABILITY_QUICK_DRAW && !IS_MOVE_STATUS(gChosenMoveByBattler[battler1]) && Random() % 100 < 30)
-        gProtectStructs[battler1].quickDraw = TRUE;
+    if (!gProtectStructs[battler1].quickDrawRandom)
+    {
+        gProtectStructs[battler1].quickDrawRandom = TRUE; // chance for quick draw was calculated this turn, it won't be done again until cleaned up
+        if (!ignoreChosenMoves && ability1 == ABILITY_QUICK_DRAW && !IS_MOVE_STATUS(gChosenMoveByBattler[battler1]) && Random() % 100 < 30)
+            gProtectStructs[battler1].quickDraw = TRUE;
+    }
+
     // Quick Claw and Custap Berry
-    if (!gProtectStructs[battler1].quickDraw
-     && ((holdEffectBattler1 == HOLD_EFFECT_QUICK_CLAW && gRandomTurnNumber < (0xFFFF * GetBattlerHoldEffectParam(battler1)) / 100)
-     || (holdEffectBattler1 == HOLD_EFFECT_CUSTAP_BERRY && HasEnoughHpToEatBerry(battler1, 4, gBattleMons[battler1].item))
-     || ActivateMovePriorityCharm(battler1)))
-        gProtectStructs[battler1].usedCustapBerry = TRUE;
+    if (!gProtectStructs[battler1].quickClawRandom)
+    {
+        gProtectStructs[battler1].quickClawRandom = TRUE;  // chance for quick draw was calculated this turn, it won't be done again until cleaned up
+        if (!gProtectStructs[battler1].quickDraw
+        && ((holdEffectBattler1 == HOLD_EFFECT_QUICK_CLAW && gRandomTurnNumber < (0xFFFF * GetBattlerHoldEffectParam(battler1)) / 100)
+        || (holdEffectBattler1 == HOLD_EFFECT_CUSTAP_BERRY && HasEnoughHpToEatBerry(battler1, 4, gBattleMons[battler1].item))
+        || ActivateMovePriorityCharm(battler1)))
+            gProtectStructs[battler1].usedCustapBerry = TRUE;
+    }
 
     // Battler 2
     speedBattler2 = GetBattlerTotalSpeedStat(battler2);
     holdEffectBattler2 = GetBattlerHoldEffect(battler2, TRUE);
     // Quick Draw
-    if (!ignoreChosenMoves && ability2 == ABILITY_QUICK_DRAW && !IS_MOVE_STATUS(gChosenMoveByBattler[battler2]) && Random() % 100 < 30)
-        gProtectStructs[battler2].quickDraw = TRUE;
+    if (!gProtectStructs[battler2].quickDrawRandom)
+    {
+        gProtectStructs[battler2].quickDrawRandom = TRUE; // chance for quick draw was calculated this turn, it won't be done again until cleaned up
+        if (!ignoreChosenMoves && ability2 == ABILITY_QUICK_DRAW && !IS_MOVE_STATUS(gChosenMoveByBattler[battler2]) && Random() % 100 < 30)
+            gProtectStructs[battler2].quickDraw = TRUE;
+    }
     // Quick Claw and Custap Berry
-    if (!gProtectStructs[battler2].quickDraw
-     && ((holdEffectBattler2 == HOLD_EFFECT_QUICK_CLAW && gRandomTurnNumber < (0xFFFF * GetBattlerHoldEffectParam(battler2)) / 100)
-     || (holdEffectBattler2 == HOLD_EFFECT_CUSTAP_BERRY && HasEnoughHpToEatBerry(battler2, 4, gBattleMons[battler2].item))
-     || ActivateMovePriorityCharm(battler2)))
-        gProtectStructs[battler2].usedCustapBerry = TRUE;
+    if (!gProtectStructs[battler2].quickClawRandom)
+    {
+        gProtectStructs[battler2].quickClawRandom = TRUE;  // chance for quick draw was calculated this turn, it won't be done again until cleaned up
+        if (!gProtectStructs[battler2].quickDraw
+        && ((holdEffectBattler2 == HOLD_EFFECT_QUICK_CLAW && gRandomTurnNumber < (0xFFFF * GetBattlerHoldEffectParam(battler2)) / 100)
+        || (holdEffectBattler2 == HOLD_EFFECT_CUSTAP_BERRY && HasEnoughHpToEatBerry(battler1, 4, gBattleMons[battler2].item))
+        || ActivateMovePriorityCharm(battler2)))
+            gProtectStructs[battler2].usedCustapBerry = TRUE;
+    }
 
     if (!ignoreChosenMoves)
     {
@@ -4819,6 +4836,10 @@ static void TurnValuesCleanUp(bool8 var0)
             gProtectStructs[gActiveBattler].spikyShielded = FALSE;
             gProtectStructs[gActiveBattler].kingsShielded = FALSE;
             gProtectStructs[gActiveBattler].banefulBunkered = FALSE;
+            gProtectStructs[gActiveBattler].quickDraw = FALSE;
+            gProtectStructs[gActiveBattler].usedCustapBerry = FALSE;
+            gProtectStructs[gActiveBattler].quickClawRandom = FALSE;
+            gProtectStructs[gActiveBattler].quickDrawRandom = FALSE;
         }
         else
         {
@@ -4953,7 +4974,6 @@ static void CheckQuickClaw_CustapBerryActivation(void)
                 if (gProtectStructs[gActiveBattler].usedCustapBerry)
                 {
                     u16 holdEffect = GetBattlerHoldEffect(gActiveBattler, FALSE);
-                    gProtectStructs[gActiveBattler].usedCustapBerry = FALSE;
                     gLastUsedItem = gBattleMons[gActiveBattler].item;
                     PREPARE_ITEM_BUFFER(gBattleTextBuff1, gLastUsedItem);
                     if (holdEffect == HOLD_EFFECT_CUSTAP_BERRY)
@@ -4974,7 +4994,6 @@ static void CheckQuickClaw_CustapBerryActivation(void)
                 else if (gProtectStructs[gActiveBattler].quickDraw)
                 {
                     gBattlerAbility = gActiveBattler;
-                    gProtectStructs[gActiveBattler].quickDraw = FALSE;
                     gLastUsedAbility = gBattleMons[gActiveBattler].ability;
                     PREPARE_ABILITY_BUFFER(gBattleTextBuff1, gLastUsedAbility);
                     RecordAbilityBattle(gActiveBattler, gLastUsedAbility);

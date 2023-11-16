@@ -24674,6 +24674,17 @@ const u8 gTMHMLearnsets[][64] =
                                           TMHM(TM44_REST)
                                           TMHM(TM30_SHADOW_BALL)),
 
+    [SPECIES_ZAMAZENTA_CROWNED_SHIELD]   = TMHM_LEARNSET(TMHM(TM28_DIG)
+                                          TMHM(TM42_FACADE)
+                                          TMHM(TM15_HYPER_BEAM)
+                                          TMHM(TM23_IRON_TAIL)
+                                          TMHM(TM16_LIGHT_SCREEN)
+                                          TMHM(TM17_PROTECT)
+                                          TMHM(TM33_REFLECT)
+                                          TMHM(TM44_REST)
+                                          TMHM(TM20_SAFEGUARD)
+                                          TMHM(TM22_SOLAR_BEAM)),
+
     [SPECIES_ALCREMIE_RUBY_CREAM]  = TMHM_LEARNSET(TMHM(TM45_ATTRACT)
                                           TMHM(TM04_CALM_MIND)
                                           TMHM(TM42_FACADE)

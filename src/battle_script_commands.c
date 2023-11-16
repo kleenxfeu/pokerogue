@@ -577,7 +577,7 @@ static void Cmd_settelekinesis(void);
 static void Cmd_swapstatstages(void);
 static void Cmd_averagestats(void);
 static void Cmd_jumpifoppositegenders(void);
-static void Cmd_trygetbaddreamstarget(void);
+static void Cmd_trygetbaddreamstarget(void); // unused
 static void Cmd_tryworryseed(void);
 static void Cmd_extMethods(void);
 static void Cmd_metalburstdamagecalculator(void);
@@ -837,7 +837,7 @@ void (* const gBattleScriptingCommandsTable[])(void) =
     Cmd_swapstatstages,                          //0xFA
     Cmd_averagestats,                            //0xFB
     Cmd_jumpifoppositegenders,                   //0xFC
-    Cmd_trygetbaddreamstarget,                   //0xFD
+    Cmd_trygetbaddreamstarget,                   //0xFD unused
     Cmd_tryworryseed,                            //0xFE
     Cmd_extMethods,                              //0xFF
     //Cmd_metalburstdamagecalculator,              //0xFF
@@ -10154,13 +10154,19 @@ static void Cmd_tryexplosion(void) // unused
         return;
     }
 
+    if (GetBattlerAbility(gBattlerAttacker) == ABILITY_MAGIC_GUARD && gBattleMoves[gCurrentMove].effect == EFFECT_MIND_BLOWN)
+    {
+        gBattlescriptCurrInstr++;
+    }
+    else
+    {
         // Success, no battlers with Damp. Drop user's HP bar to 0
     gActiveBattler = gBattlerAttacker;
     gBattleMoveDamage = gBattleMons[gActiveBattler].hp;
     BtlController_EmitHealthBarUpdate(BUFFER_A, INSTANT_HP_BAR_DROP);
     MarkBattlerForControllerExec(gActiveBattler);
     gBattlescriptCurrInstr++;
-
+    }
         // Find first target
     for (gBattlerTarget = 0; gBattlerTarget < gBattlersCount; gBattlerTarget++)
     {
@@ -14737,9 +14743,9 @@ static void Cmd_jumpifoppositegenders(void)
         gBattlescriptCurrInstr += 5;
 }
 
-static void Cmd_trygetbaddreamstarget(void)
+static void Cmd_trygetbaddreamstarget(void) // unused
 {
-    u8 badDreamsMonSide = GetBattlerSide(gBattlerAttacker);
+    /*u8 badDreamsMonSide = GetBattlerSide(gBattlerAttacker);
     for (;gBattlerTarget < gBattlersCount; gBattlerTarget++)
     {
         if (GetBattlerSide(gBattlerTarget) == badDreamsMonSide)
@@ -14752,7 +14758,7 @@ static void Cmd_trygetbaddreamstarget(void)
     if (gBattlerTarget >= gBattlersCount)
         gBattlescriptCurrInstr = T1_READ_PTR(gBattlescriptCurrInstr + 1);
     else
-        gBattlescriptCurrInstr += 5;
+        gBattlescriptCurrInstr += 5;*/
 }
 
 static void Cmd_tryworryseed(void)
