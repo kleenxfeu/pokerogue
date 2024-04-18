@@ -683,12 +683,6 @@ bool8 TryRunFromBattle(u8 battler)
             if (speedVar > (Random() & 0xFF))
                 effect++;
         }
-        else if (gBattleMons[battler].speed < gBattleMons[runningFromBattler].speed)
-        {
-            speedVar = (gBattleMons[battler].speed * 128) / (gBattleMons[runningFromBattler].speed) + (gBattleStruct->runTries * 30);
-            if (speedVar > (Random() & 0xFF))
-                effect++;
-        }
         else // same speed or faster
         {
             effect++;
@@ -8185,12 +8179,13 @@ static u16 CalcMoveBasePower(u16 move, u8 battlerAtk, u8 battlerDef)
     case EFFECT_STORED_POWER:
         basePower += (CountBattlerStatIncreases(battlerAtk, TRUE) * 20);
         break;
+        /*
     case EFFECT_ELECTRO_BALL:
         speed = GetBattlerTotalSpeedStat(battlerAtk) / GetBattlerTotalSpeedStat(battlerDef);
         if (speed >= ARRAY_COUNT(sSpeedDiffPowerTable))
             speed = ARRAY_COUNT(sSpeedDiffPowerTable) - 1;
         basePower = sSpeedDiffPowerTable[speed];
-        break;
+        break;*/ // custom effect now
     case EFFECT_GYRO_BALL:
         basePower = ((25 * GetBattlerTotalSpeedStat(battlerDef)) / GetBattlerTotalSpeedStat(battlerAtk)) + 1;
         if (basePower > 150)
@@ -8629,10 +8624,15 @@ static u32 CalcAttackStat(u16 move, u8 battlerAtk, u8 battlerDef, u8 moveType, b
             atkStage = gBattleMons[battlerDef].statStages[STAT_SPATK];
         }
     }
-    else if (gBattleMoves[move].effect == EFFECT_BODY_PRESS)
+    else if (gBattleMoves[move].effect == EFFECT_BODY_PRESS || move == MOVE_BEHEMOTH_BASH)
     {
         atkStat = gBattleMons[battlerAtk].defense;
         atkStage = gBattleMons[battlerAtk].statStages[STAT_DEF];
+    }
+    else if (gBattleMoves[move].effect == EFFECT_ELECTRO_BALL)
+    {
+        atkStat = gBattleMons[battlerAtk].speed;
+        atkStage = gBattleMons[battlerAtk].statStages[STAT_SPEED];
     }
     else
     {
@@ -8793,13 +8793,6 @@ static u32 CalcAttackStat(u16 move, u8 battlerAtk, u8 battlerDef, u8 moveType, b
         break;
     }
 
-    // The offensive stats of a Player's Pokémon are boosted by x1.1 (+10%) if they have the 1st badge and 7th badges.
-    // Having the 1st badge boosts physical attack while having the 7th badge boosts special attack.
-    if (ShouldGetStatBadgeBoost(FLAG_BADGE01_GET, battlerAtk) && IS_MOVE_PHYSICAL(move))
-        MulModifier(&modifier, UQ_4_12(1.1));
-    if (ShouldGetStatBadgeBoost(FLAG_BADGE07_GET, battlerAtk) && IS_MOVE_SPECIAL(move))
-        MulModifier(&modifier, UQ_4_12(1.1));
-
     return ApplyModifier(modifier, atkStat);
 }
 
@@ -8956,12 +8949,9 @@ static u32 CalcDefenseStat(u16 move, u8 battlerAtk, u8 battlerDef, u8 moveType, 
     if (IS_BATTLER_OF_TYPE(battlerDef, TYPE_ROCK) && gBattleWeather & B_WEATHER_SANDSTORM && WEATHER_HAS_EFFECT && !usesDefStat)
         MulModifier(&modifier, UQ_4_12(1.5));
 
-    // The defensive stats of a Player's Pokémon are boosted by x1.1 (+10%) if they have the 5th badge and 7th badges.
-    // Having the 5th badge boosts physical defense while having the 7th badge boosts special defense.
-    if (ShouldGetStatBadgeBoost(FLAG_BADGE05_GET, battlerDef) && IS_MOVE_PHYSICAL(move))
-        MulModifier(&modifier, UQ_4_12(1.1));
-    if (ShouldGetStatBadgeBoost(FLAG_BADGE07_GET, battlerDef) && IS_MOVE_SPECIAL(move))
-        MulModifier(&modifier, UQ_4_12(1.1));
+    // hail/snow def boost for ice types
+    if (IS_BATTLER_OF_TYPE(battlerDef, TYPE_ICE) && gBattleWeather & B_WEATHER_HAIL && WEATHER_HAS_EFFECT && usesDefStat)
+        MulModifier(&modifier, UQ_4_12(1.5));
 
     return ApplyModifier(modifier, defStat);
 }
@@ -8969,6 +8959,7 @@ static u32 CalcDefenseStat(u16 move, u8 battlerAtk, u8 battlerDef, u8 moveType, 
 static u32 CalcFinalDmg(u32 dmg, u16 move, u8 battlerAtk, u8 battlerDef, u8 moveType, u16 typeEffectivenessModifier, bool32 isCrit, bool32 updateFlags)
 {
     u32 percentBoost;
+    u32 teravoltTurboblazed = 0;
     u32 abilityAtk = GetBattlerAbility(battlerAtk);
     u32 abilityDef = GetBattlerAbility(battlerDef);
     u32 defSide = GET_BATTLER_SIDE(battlerDef);
@@ -9009,11 +9000,15 @@ static u32 CalcFinalDmg(u32 dmg, u16 move, u8 battlerAtk, u8 battlerDef, u8 move
     }
 
     // check stab
-    if (IS_BATTLER_OF_TYPE(battlerAtk, moveType) && move != MOVE_STRUGGLE && move != MOVE_NONE)
+    teravoltTurboblazed = ((moveType == TYPE_FIRE) && (abilityAtk == ABILITY_TURBOBLAZE))
+           || ((moveType == TYPE_ELECTRIC) && (abilityAtk == ABILITY_TERAVOLT));
+
+    if ((move != MOVE_STRUGGLE) && (move != MOVE_NONE))
     {
-        if (abilityAtk == ABILITY_ADAPTABILITY)
+        if ((IS_BATTLER_OF_TYPE(battlerAtk, moveType)) && ((abilityAtk == ABILITY_ADAPTABILITY) || teravoltTurboblazed))
             MulModifier(&finalModifier, UQ_4_12(2.0));
-        else
+
+        else if (IS_BATTLER_OF_TYPE(battlerAtk, moveType) || teravoltTurboblazed )
             MulModifier(&finalModifier, UQ_4_12(1.5));
     }
 
@@ -9746,22 +9741,6 @@ bool32 SetIllusionMon(struct Pokemon *mon, u32 battlerId)
     }
 
     return FALSE;
-}
-
-bool8 ShouldGetStatBadgeBoost(u16 badgeFlag, u8 battlerId)
-{
-    if (B_BADGE_BOOST != GEN_3)
-        return FALSE;
-    else if (gBattleTypeFlags & (BATTLE_TYPE_LINK | BATTLE_TYPE_EREADER_TRAINER | BATTLE_TYPE_RECORDED_LINK | BATTLE_TYPE_FRONTIER))
-        return FALSE;
-    else if (GetBattlerSide(battlerId) != B_SIDE_PLAYER)
-        return FALSE;
-    else if (gBattleTypeFlags & BATTLE_TYPE_TRAINER && gTrainerBattleOpponent_A == TRAINER_SECRET_BASE)
-        return FALSE;
-    else if (FlagGet(badgeFlag))
-        return TRUE;
-    else
-        return FALSE;
 }
 
 u8 GetBattleMoveSplit(u32 moveId)

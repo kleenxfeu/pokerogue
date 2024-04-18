@@ -4509,14 +4509,6 @@ u32 GetBattlerTotalSpeedStat(u8 battlerId)
     speed *= gStatStageRatios[gBattleMons[battlerId].statStages[STAT_SPEED]][0];
     speed /= gStatStageRatios[gBattleMons[battlerId].statStages[STAT_SPEED]][1];
 
-    // player's badge boost
-    if (!(gBattleTypeFlags & (BATTLE_TYPE_LINK | BATTLE_TYPE_RECORDED_LINK | BATTLE_TYPE_FRONTIER))
-        && ShouldGetStatBadgeBoost(FLAG_BADGE03_GET, battlerId)
-        && GetBattlerSide(battlerId) == B_SIDE_PLAYER)
-    {
-        speed = (speed * 110) / 100;
-    }
-
     // item effects
     if (holdEffect == HOLD_EFFECT_MACHO_BRACE || holdEffect == HOLD_EFFECT_POWER_ITEM)
         speed /= 2;
@@ -4562,6 +4554,11 @@ s8 GetMovePriority(u32 battlerId, u16 move)
     if (ability == ABILITY_GALE_WINGS
         && gBattleMoves[move].type == TYPE_FLYING
         && (B_GALE_WINGS <= GEN_6 || BATTLER_MAX_HP(battlerId)))
+    {
+        priority++;
+    }
+    else if ((ability == ABILITY_MEGA_LAUNCHER) && (gBattleMoves[move].flags & FLAG_MEGA_LAUNCHER_BOOST)
+    && ( gBattleMons[battlerId].species == SPECIES_CLAWITZER || gBattleMons[battlerId].species == SPECIES_CLAUNCHER ))
     {
         priority++;
     }

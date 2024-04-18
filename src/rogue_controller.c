@@ -1348,7 +1348,7 @@ static void SelectStartMons(void)
     RogueQuery_Clear();
     RogueQuery_Exclude(SPECIES_SUNKERN);
     RogueQuery_Exclude(SPECIES_SUNFLORA);
-
+    VarSet(VAR_ROGUE_ENABLED_GEN_LIMIT, 8);
     RogueQuery_SpeciesIsValid(TYPE_NONE, TYPE_NONE, TYPE_NONE);
     RogueQuery_SpeciesExcludeCommon();
     RogueQuery_SpeciesIsNotLegendary();
@@ -1438,7 +1438,7 @@ static void EnsureLoadValuesAreValid(bool8 newGame, u16 saveVersion)
             FlagClear(FLAG_ROGUE_MET_POKABBIE);
             FlagClear(FLAG_IS_CHAMPION);
 
-            VarSet(VAR_ROGUE_ENABLED_GEN_LIMIT, 3);
+            VarSet(VAR_ROGUE_ENABLED_GEN_LIMIT, 8);
             VarSet(VAR_ROGUE_FURTHEST_DIFFICULTY, 0);
             VarSet(VAR_ROGUE_ADVENTURE_MONEY, 0);
 

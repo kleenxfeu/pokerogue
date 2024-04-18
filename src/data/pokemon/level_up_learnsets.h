@@ -10043,8 +10043,11 @@ static const struct LevelUpMove sManaphyLevelUpLearnset[] = {
 };
 
 static const struct LevelUpMove sDarkraiLevelUpLearnset[] = {
-    LEVEL_UP_MOVE( 1, MOVE_OMINOUS_WIND),
     LEVEL_UP_MOVE( 1, MOVE_DISABLE),
+    LEVEL_UP_MOVE( 1, MOVE_DARK_VOID),
+    LEVEL_UP_MOVE( 1, MOVE_NASTY_PLOT),
+    LEVEL_UP_MOVE( 1, MOVE_DARK_PULSE),
+    LEVEL_UP_MOVE( 1, MOVE_OMINOUS_WIND),
     LEVEL_UP_MOVE(11, MOVE_QUICK_ATTACK),
     LEVEL_UP_MOVE(20, MOVE_HYPNOSIS),
     LEVEL_UP_MOVE(29, MOVE_FEINT_ATTACK),

@@ -3386,7 +3386,7 @@ const struct BattleMove gBattleMoves[MOVES_COUNT_Z] =
         .secondaryEffectChance = 30,
         .target = MOVE_TARGET_SELECTED,
         .priority = 0,
-        .flags = FLAG_PROTECT_AFFECTED | FLAG_MIRROR_MOVE_AFFECTED | FLAG_SHEER_FORCE_BOOST | FLAG_BALLISTIC,
+        .flags = FLAG_PROTECT_AFFECTED | FLAG_MIRROR_MOVE_AFFECTED | FLAG_SHEER_FORCE_BOOST | FLAG_BALLISTIC | FLAG_MEGA_LAUNCHER_BOOST, 
         .split = SPLIT_SPECIAL,
         .zMovePower = 175,
         .zMoveEffect = Z_EFFECT_NONE,
@@ -8334,11 +8334,7 @@ const struct BattleMove gBattleMoves[MOVES_COUNT_Z] =
 
     [MOVE_DARK_VOID] =
     {
-        #if B_UPDATED_MOVE_DATA >= GEN_7
-            .accuracy = 50,
-        #else
-            .accuracy = 80,
-        #endif
+        .accuracy = 80,
         .effect = EFFECT_SLEEP,
         .power = 0,
         .type = TYPE_DARK,
@@ -8724,7 +8720,7 @@ const struct BattleMove gBattleMoves[MOVES_COUNT_Z] =
     [MOVE_ELECTRO_BALL] =
     {
         .effect = EFFECT_ELECTRO_BALL,
-        .power = 1,
+        .power = 80,
         .type = TYPE_ELECTRIC,
         .accuracy = 100,
         .pp = 10,

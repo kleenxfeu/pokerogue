@@ -11422,7 +11422,7 @@ static void Cmd_weatherdamage(void)
                     gBattleMoveDamage = 1;
                 gBattleMoveDamage *= -1;
             }
-            else if (!IS_BATTLER_OF_TYPE(gBattlerAttacker, TYPE_ICE)
+            /*else if (!IS_BATTLER_OF_TYPE(gBattlerAttacker, TYPE_ICE)
                 && ability != ABILITY_SNOW_CLOAK
                 && ability != ABILITY_OVERCOAT
                 && ability != ABILITY_ICE_BODY
@@ -11432,7 +11432,7 @@ static void Cmd_weatherdamage(void)
                 gBattleMoveDamage = gBattleMons[gBattlerAttacker].maxHP / 16;
                 if (gBattleMoveDamage == 0)
                     gBattleMoveDamage = 1;
-            }
+            }*/ // hail doesn't damage
         }
     }
 
