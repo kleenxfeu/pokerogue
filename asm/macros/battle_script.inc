@@ -676,7 +676,7 @@
 	.byte 0x77
 	.endm
 
-	.macro faintifabilitynotdamp
+	.macro unused
 	.byte 0x78
 	.endm
 

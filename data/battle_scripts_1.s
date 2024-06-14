@@ -2950,6 +2950,7 @@ BattleScript_HitFromCritCalc::
 BattleScript_HitFromAtkAnimation::
 	attackanimation
 	waitanimation
+BattleScript_HitFromEffectivenessSound:
 	effectivenesssound
 	hitanimation BS_TARGET
 	waitstate
@@ -3192,67 +3193,34 @@ BattleScript_EffectParalyzeHit::
 	setmoveeffect MOVE_EFFECT_PARALYSIS
 	goto BattleScript_EffectHit
 
+BattleScript_EffectMindBlown::
 BattleScript_EffectExplosion::
 	attackcanceler
 	attackstring
 	ppreduce
-	faintifabilitynotdamp
-	setatkhptozero
-	waitstate
-	jumpifbyte CMP_NO_COMMON_BITS, gMoveResultFlags, MOVE_RESULT_MISSED, BattleScript_ExplosionDoAnimStartLoop
-	call BattleScript_PreserveMissedBitDoMoveAnim
-	goto BattleScript_ExplosionLoop
-BattleScript_ExplosionDoAnimStartLoop:
 	attackanimation
 	waitanimation
-BattleScript_ExplosionLoop:
-	movevaluescleanup
+	accuracycheck BattleScript_PrintMoveMissed, ACC_CURR_MOVE
 	critcalc
 	damagecalc
 	adjustdamage
-	accuracycheck BattleScript_ExplosionMissed, ACC_CURR_MOVE
-	effectivenesssound
-	hitanimation BS_TARGET
-	waitstate
-	healthbarupdate BS_TARGET
-	datahpupdate BS_TARGET
-	critmessage
-	waitmessage B_WAIT_TIME_LONG
-	resultmessage
-	waitmessage B_WAIT_TIME_LONG
-	tryfaintmon BS_TARGET
-	moveendto MOVEEND_NEXT_TARGET
-	jumpifnexttargetvalid BattleScript_ExplosionLoop
-	tryfaintmon BS_ATTACKER
-	moveendcase MOVEEND_CLEAR_BITS
-	end
-BattleScript_ExplosionMissed:
-	effectivenesssound
-	resultmessage
-	waitmessage B_WAIT_TIME_LONG
-	moveendto MOVEEND_NEXT_TARGET
-	jumpifnexttargetvalid BattleScript_ExplosionLoop
-	tryfaintmon BS_ATTACKER
-	end
+	goto BattleScript_HitFromEffectivenessSound
 
-BattleScript_EffectMindBlown::
-	attackcanceler
+BattleScript_ExplosionInVoid::
 	attackstring
-	ppreduce
-	faintifabilitynotdamp
-	dmg_1_2_attackerhp
-	healthbarupdate BS_ATTACKER
-	datahpupdate BS_ATTACKER
-	waitstate
-	jumpifbyte CMP_NO_COMMON_BITS, gMoveResultFlags, MOVE_RESULT_MISSED, BattleScript_ExplosionDoAnimStartLoop
-	call BattleScript_PreserveMissedBitDoMoveAnim
-	goto BattleScript_ExplosionLoop
-
-BattleScript_PreserveMissedBitDoMoveAnim:
-	bichalfword gMoveResultFlags, MOVE_RESULT_MISSED
+	bichalfword gMoveResultFlags, MOVE_RESULT_FAILED @ to avoid getting "but it failed" and thus not play the animation
 	attackanimation
 	waitanimation
-	orhalfword gMoveResultFlags, MOVE_RESULT_MISSED
+	orhalfword gMoveResultFlags, MOVE_RESULT_FAILED @ restores the flag
+	goto BattleScript_ButItFailedPpReduce
+
+BattleScript_DoRecoilNoString:: @ mind blown, explosion
+	orword gHitMarker, HITMARKER_IGNORE_SUBSTITUTE | HITMARKER_PASSIVE_DAMAGE | HITMARKER_IGNORE_DISGUISE
+	healthbarupdate BS_ATTACKER
+	datahpupdate BS_ATTACKER
+	call BattleScript_FlushMessageBox 
+	pause B_WAIT_TIME_SHORT
+	tryfaintmon BS_ATTACKER
 	return
 
 BattleScript_EffectDreamEater::
@@ -8429,12 +8397,11 @@ BattleScript_SturdyPreventsOHKO::
 	goto BattleScript_MoveEnd
 
 BattleScript_DampStopsExplosion::
+	call BattleScript_FlushMessageBox @ smother transition when our second poke uses explosion in double
 	pause B_WAIT_TIME_SHORT
-	copybyte gBattlerAbility, gBattlerTarget
 	call BattleScript_AbilityPopUp
 	printstring STRINGID_PKMNPREVENTSUSAGE
 	pause B_WAIT_TIME_LONG
-	moveendto MOVEEND_NEXT_TARGET
 	moveendcase MOVEEND_CLEAR_BITS
 	end
 
@@ -8464,7 +8431,7 @@ BattleScript_MoveStatDrain::
 	printstring STRINGID_TARGETABILITYSTATRAISE
 	waitmessage B_WAIT_TIME_LONG
 	clearsemiinvulnerablebit
-	tryfaintmon BS_ATTACKER
+	orhalfword gMoveResultFlags, MOVE_RESULT_DOESNT_AFFECT_FOE
 	goto BattleScript_MoveEnd
 
 BattleScript_MonMadeMoveUseless_PPLoss::
@@ -8475,7 +8442,6 @@ BattleScript_MonMadeMoveUseless::
 	call BattleScript_AbilityPopUp
 	printstring STRINGID_PKMNSXMADEYUSELESS
 	waitmessage B_WAIT_TIME_LONG
-	tryfaintmon BS_ATTACKER
 	orhalfword gMoveResultFlags, MOVE_RESULT_DOESNT_AFFECT_FOE
 	goto BattleScript_MoveEnd
 
@@ -8487,7 +8453,7 @@ BattleScript_FlashFireBoost::
 	call BattleScript_AbilityPopUp
 	printfromtable gFlashFireStringIds
 	waitmessage B_WAIT_TIME_LONG
-	tryfaintmon BS_ATTACKER
+	orhalfword gMoveResultFlags, MOVE_RESULT_DOESNT_AFFECT_FOE
 	goto BattleScript_MoveEnd
 
 BattleScript_AbilityPreventsPhasingOut::

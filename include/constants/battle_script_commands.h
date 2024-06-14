@@ -303,16 +303,17 @@
 #define MOVEEND_UPDATE_LAST_MOVES                 19
 #define MOVEEND_MIRROR_MOVE                       20
 #define MOVEEND_NEXT_TARGET                       21    // Everything up until here is handled for each strike of a multi-hit move
-#define MOVEEND_MAGICIAN                          22    // Occurs after final multi-hit strike, and after other items/abilities would activate
-#define MOVEEND_EJECT_BUTTON                      23
-#define MOVEEND_RED_CARD                          24
-#define MOVEEND_EJECT_PACK                        25
-#define MOVEEND_LIFEORB_SHELLBELL                 26    // Includes shell bell, throat spray, etc
-#define MOVEEND_PICKPOCKET                        27
-#define MOVEEND_DANCER                            28
-#define MOVEEND_EMERGENCY_EXIT                    29
-#define MOVEEND_CLEAR_BITS                        30
-#define MOVEEND_COUNT                             31
+#define MOVEEND_KO_USER                           22    // Explosion like move, also mind blown
+#define MOVEEND_MAGICIAN                          23    // Occurs after final multi-hit strike, and after other items/abilities would activate
+#define MOVEEND_EJECT_BUTTON                      24
+#define MOVEEND_RED_CARD                          25
+#define MOVEEND_EJECT_PACK                        26
+#define MOVEEND_LIFEORB_SHELLBELL                 27    // Includes shell bell, throat spray, etc
+#define MOVEEND_PICKPOCKET                        28
+#define MOVEEND_DANCER                            29
+#define MOVEEND_EMERGENCY_EXIT                    30
+#define MOVEEND_CLEAR_BITS                        31
+#define MOVEEND_COUNT                             32
 
 // switch cases
 #define B_SWITCH_NORMAL     0
